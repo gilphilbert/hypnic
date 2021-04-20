@@ -1,10 +1,11 @@
 #include <Arduino.h>
 
-#define HALT_MESSAGE    PB0 // physical pin 5
-#define POWER_CONTROL   PB1 // physical pin 6
-#define HALTED          PB2 // physical pin 7
-#define POWER_BUTTON    PB3 // physical pin 2
-#define EXTERNAL_POWER  PB4 // physical pin 3
+#define HALT_MESSAGE    8 // physical pin 5
+#define POWER_CONTROL   9 // physical pin 6
+#define HALTED          7 // physical pin 7
+#define POWER_BUTTON    6 // physical pin 2
+#define EXTERNAL_POWER  0 // physical pin 3
+#define CHARGE_LEVEL    3
 
 #define BROWNOUT_DELAY  2000 // wait 2 seconds
 #define POWER_DELAY     10000 // wait 10 seconds
@@ -22,6 +23,7 @@ void setup() {
   pinMode(HALTED, INPUT_PULLUP);
   pinMode(POWER_BUTTON, INPUT_PULLUP);
   pinMode(EXTERNAL_POWER, INPUT);
+  pinMode(CHARGE_LEVEL, INPUT);
 
   // make sure power is off
   digitalWrite(POWER_CONTROL, 0);
