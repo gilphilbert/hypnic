@@ -1,10 +1,13 @@
 #include <Arduino.h>
 
-#define HALT_MESSAGE    PB0 // physical pin 5
-#define POWER_CONTROL   PB1 // physical pin 6
-#define HALTED          PB2 // physical pin 7
-#define POWER_BUTTON    PB3 // physical pin 2
-#define EXTERNAL_POWER  PB4 // physical pin 3
+// we use a local pin mapping since the Arduino one is incomplete
+#include "pins.h"
+
+#define HALT_MESSAGE    PB0
+#define POWER_CONTROL   PB1
+#define HALTED          PB2
+#define POWER_BUTTON    PB3
+#define EXTERNAL_POWER  PB4
 
 #define BROWNOUT_DELAY  2000 // wait 2 seconds
 #define POWER_DELAY     10000 // wait 10 seconds
