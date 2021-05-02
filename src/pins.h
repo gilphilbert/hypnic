@@ -1,3 +1,4 @@
+/* CLOCKWISE
 #define PA0     0 // physical pin 13
 #define PA1     1 // physical pin 12
 #define PA2     2 // physical pin 11
@@ -9,6 +10,19 @@
 #define PB0     10 // physical pin 2
 #define PB1     9 // physical pin 3
 #define PB2     8 // physical pin 5
+#define PB3     11 // physical pin 4
+*/
+#define PA0     10 // physical pin 13
+#define PA1     9 // physical pin 12
+#define PA2     8 // physical pin 11
+#define PA3     7 // physical pin 10
+#define PA4     6 // physical pin 9
+#define PA5     5 // physical pin 8
+#define PA6     4 // physical pin 7
+#define PA7     3 // physical pin 6
+#define PB0     0 // physical pin 2
+#define PB1     1 // physical pin 3
+#define PB2     2 // physical pin 5
 #define PB3     11 // physical pin 4
 
 #define A0      PA0

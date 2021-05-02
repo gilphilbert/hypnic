@@ -2,12 +2,15 @@
 // we include our own pin mapping since the Arduino one is poor
 #include "pins.h"
 
-#define HALT_MESSAGE    PB2
-#define POWER_CONTROL   PB1
-#define HALTED          PA7
-#define POWER_BUTTON    PA6
-#define EXTERNAL_POWER  PA0
-#define CHARGE_LEVEL    PA3
+
+#define HALT_MESSAGE    PA2
+#define POWER_CONTROL   PA1
+#define SAFE            PA3
+#define POWER_BUTTON    PA4
+#define EXTERNAL_POWER  PB0
+#define CHARGE_LEVEL    PA7
+#define LED             PB2
+#define JUMPERS         PA0
 
 #define BROWNOUT_DELAY  2000 // wait 2 seconds
 #define POWER_DELAY     10000 // wait 10 seconds
@@ -22,13 +25,16 @@ void setup() {
   // configure the device pins
   pinMode(HALT_MESSAGE, OUTPUT);
   pinMode(POWER_CONTROL, OUTPUT);
-  pinMode(HALTED, INPUT_PULLUP);
+  pinMode(SAFE, INPUT_PULLUP);
   pinMode(POWER_BUTTON, INPUT_PULLUP);
   pinMode(EXTERNAL_POWER, INPUT);
   pinMode(CHARGE_LEVEL, INPUT);
+  pinMode(LED, OUTPUT);
+  pinMode(JUMPERS, INPUT_PULLUP);
 
   // make sure power is off
   digitalWrite(POWER_CONTROL, 0);
+  digitalWrite(LED, 0);
   digitalWrite(HALT_MESSAGE, 0);
 }
 
@@ -48,6 +54,7 @@ void checkPower() {
         // if the powerDownTimer is 0 (i.e., we've got power and we're not powering down)
         // if we're not in the middle of powering down, power the device up
         digitalWrite(POWER_CONTROL, 1);
+        digitalWrite(LED, 1);
         deviceOnTime = millis();
       }
     }
@@ -65,6 +72,7 @@ void checkButton() {
       bool powerState = digitalRead(POWER_CONTROL);
       if (powerState == LOW && externalPower == HIGH) {
         digitalWrite(POWER_CONTROL, 1);
+        digitalWrite(LED, 1);
         deviceOnTime = millis();
       } else if (powerDownTimer == 0) {
         digitalWrite(HALT_MESSAGE, 1);
@@ -90,14 +98,15 @@ void loop() {
     }
   }
 
-  bool haltedState = digitalRead(HALTED);
+  bool haltedState = digitalRead(SAFE);
   // if the device is halted, or the powerDownTimer has expired
-  if (millis() > deviceOnTime + 5000 && haltedState == LOW || (powerDownTimer && millis() > powerDownTimer)) {
+  if ((millis() > deviceOnTime + 5000) && (haltedState == LOW || (powerDownTimer && millis() > powerDownTimer))) {
     // reset the system
     powerDownTimer = 0;
     brownoutTimer = 0;
     deviceOnTime = 0;
     digitalWrite(POWER_CONTROL, 0);
+    digitalWrite(LED, 0);
     digitalWrite(HALT_MESSAGE, 0);
   }
 }
