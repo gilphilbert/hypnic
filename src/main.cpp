@@ -93,14 +93,15 @@ void loop() {
       // start the powerDown timer (in case we don't get a message from the device)
       if (powerDownTimer == 0) {
         digitalWrite(HALT_MESSAGE, 1);
-        powerDownTimer = millis() + POWER_DELAY;
+        // subtract the brownout delay (already waited this long)
+        powerDownTimer = millis() + (POWER_DELAY - BROWNOUT_DELAY);
       }
     }
   }
 
   bool haltedState = digitalRead(SAFE);
   // if the device is halted, or the powerDownTimer has expired
-  if ((millis() > deviceOnTime + 5000) && (haltedState == LOW || (powerDownTimer && millis() > powerDownTimer))) {
+  if ((millis() > deviceOnTime + 5000) && (haltedState == LOW || (powerDownTimer > 0 && millis() > powerDownTimer))) {
     // reset the system
     powerDownTimer = 0;
     brownoutTimer = 0;
