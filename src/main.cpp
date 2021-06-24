@@ -17,7 +17,8 @@
 
 bool externalPower = LOW; // assume the device is powered down
 bool buttonState = HIGH; // internal pullup, so high is open
-unsigned long deviceOnTime = 0; // store the time that the device was powered on
+bool powerState = false; // the current state of the device
+bool deviceReportsOn = false; // this is set to 1 when the "SAFE" line goes low
 unsigned long brownoutTimer = 0; // timer used to delay power down to cover brownouts
 unsigned long powerDownTimer = 0; // powers down the device even if we don't get a safe signal
 
@@ -55,7 +56,7 @@ void checkPower() {
         // if we're not in the middle of powering down, power the device up
         digitalWrite(POWER_CONTROL, 1);
         digitalWrite(LED, 1);
-        deviceOnTime = millis();
+        powerState = true;
       }
     }
   }
@@ -69,11 +70,10 @@ void checkButton() {
     buttonDebounce = millis() + 250; // long debounce, but that's OK for our application
     if (newState == LOW) {
       // button was pressed! Let's see what state we're in
-      bool powerState = digitalRead(POWER_CONTROL);
-      if (powerState == LOW && externalPower == HIGH) {
+      if (!powerState && externalPower == HIGH) {
         digitalWrite(POWER_CONTROL, 1);
         digitalWrite(LED, 1);
-        deviceOnTime = millis();
+        powerState = true;
       } else if (powerDownTimer == 0) {
         digitalWrite(HALT_MESSAGE, 1);
         brownoutTimer = 0;
@@ -86,7 +86,7 @@ void checkButton() {
 void loop() {
   checkPower();
   checkButton();
-  if (deviceOnTime && brownoutTimer > 0 && millis() > brownoutTimer) {
+  if (powerState && brownoutTimer > 0 && millis() > brownoutTimer) {
     if (externalPower == LOW) {
       // the power is still low, reset the timer and send HALT signal
       brownoutTimer = 0;
@@ -99,15 +99,22 @@ void loop() {
     }
   }
 
+  // since there's no pullup on the halt pin, we need to wait for the SBC to pull it high (a low for us)
+  // before we start to monitor it. In the SBC script, the pin must be pulled high.
   bool haltedState = digitalRead(SAFE);
+  if (!deviceReportsOn && haltedState == HIGH) {
+    deviceReportsOn = true;
+  }
+
   // if the device is halted, or the powerDownTimer has expired
-  if ((millis() > deviceOnTime + 5000) && (haltedState == LOW || (powerDownTimer > 0 && millis() > powerDownTimer))) {
+  if ((deviceReportsOn && haltedState == LOW) || (powerDownTimer > 0 && millis() > powerDownTimer)) {
     // reset the system
     powerDownTimer = 0;
     brownoutTimer = 0;
-    deviceOnTime = 0;
     digitalWrite(POWER_CONTROL, 0);
     digitalWrite(LED, 0);
+    powerState = false;
+    deviceReportsOn = false;
     digitalWrite(HALT_MESSAGE, 0);
   }
 }
