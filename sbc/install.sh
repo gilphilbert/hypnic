@@ -27,6 +27,8 @@ wget -qO /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/m
 wget -qO /usr/bin/hypnic.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.py
 wget -qO /usr/lib/systemd/system/hypnic.service https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
 wget -qO /usr/lib/systemd/system-shutdown/hypnic-shutdown.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
+chmod 755 /usr/bin/hypnic.py
+chmod 755 /usr/lib/systemd/system-shutdown/hypnic-shutdown.py
 
 echo "Configuring service..."
 systemctl daemon-reload
