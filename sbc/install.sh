@@ -23,10 +23,10 @@ if [ "$EUID" -ne 0 ]
 fi
 
 echo "Downloading and installing application..."
-wget -O /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.conf
-wget -O /usr/bin/hypnic.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.py
-wget -O /usr/lib/systemd/system/hypnic.service https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
-wget -O /usr/lib/systemd/system-shutdown/hypnic-shutdown.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
+wget -qO /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.conf
+wget -qO /usr/bin/hypnic.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.py
+wget -qO /usr/lib/systemd/system/hypnic.service https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
+wget -qO /usr/lib/systemd/system-shutdown/hypnic-shutdown.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
 
 echo "Configuring service..."
 systemctl daemon-reload
