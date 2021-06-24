@@ -4,6 +4,17 @@
 # Install script for Hypnic Power Manager
 #-----------------------------------------
 
+echo ""
+echo ""
+echo "██╗░░██╗██╗░░░██╗██████╗░███╗░░██╗██╗░█████╗░"
+echo "██║░░██║╚██╗░██╔╝██╔══██╗████╗░██║██║██╔══██╗"
+echo "███████║░╚████╔╝░██████╔╝██╔██╗██║██║██║░░╚═╝"
+echo "██╔══██║░░╚██╔╝░░██╔═══╝░██║╚████║██║██║░░██╗"
+echo "██║░░██║░░░██║░░░██║░░░░░██║░╚███║██║╚█████╔╝"
+echo "╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝░░╚══╝╚═╝░╚════╝░"
+echo ""
+echo ""
+
 if [ "$EUID" -ne 0 ]
   then
     echo "This installer requires elevated privileges to exectute."
@@ -11,12 +22,21 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-echo "Downloading and installing files..."
+echo "Downloading and installing application..."
+wget -O /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.conf
+wget -O /usr/bin/hypnic.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.py
+wget -O /usr/lib/systemd/system/hypnic.service https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
+wget -O /usr/lib/systemd/system-shutdown/hypnic-shutdown.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
 
-wget -O /etc/hypnic.conf https://github.com/gilphilbert/ hypnic.conf
-#cp hypnic.service /usr/lib/systemd/system/
-#cp hypnic-service.py /usr/bin/
-#cp hypnic-shutdown.py /usr/lib/systemd/system-shutdown/
-#systemctl daemon-reload
-#systemctl enable hypnic.service
-#systemctl start hypnic.service
+echo "Configuring service..."
+systemctl daemon-reload
+systemctl enable hypnic.service
+systemctl start hypnic.service
+echo ""
+echo "Installation complete. The default pins are:"
+echo "  HALT: GPIO17"
+echo "  SAFE: GPIO27"
+echo ""
+echo "To change these pins, please run:"
+echo "  sudo hypnic.py"
+echo ""
