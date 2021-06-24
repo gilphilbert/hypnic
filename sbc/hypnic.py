@@ -10,26 +10,25 @@
 from configparser import ConfigParser
 import RPi.GPIO as GPIO
 import os
-import sys, getopt
+import sys
+import getopt
 import signal
 
+if os.geteuid() != 0:
+    exit("You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+
+# first read the current config
 parser = ConfigParser()
 parser.read('/etc/hypnic.conf')
-HALT_PIN = parser.getint("pins", "halt_pin")
-SAFE_PIN = parser.getint("pins", "safe_pin")
-
 
 def setPins():
-    print("")
-    print("")
-    print("Current pin configuration:")
+    print("\n\nCurrent pin configuration:")
     print("  HALT pin:", parser.getint("pins", "halt_pin"))
     print("  SAFE pin:", parser.getint("pins", "safe_pin"))
     print("")
     res = input("Which pin do you wish to change, halt or safe? (h/s): ")
     while (res != "h" and res != "s"):
-        print("Invalid selection")
-        print("")
+        print("Invalid selection\n")
         res = input("Which pin do you wish to change, halt or safe? (h/s): ")
     print("")
     if (res == "h"):
@@ -46,8 +45,7 @@ def setPins():
             resi = int(res)
             valid = True
         except:
-            print("Invalid pin selected")
-            print("")
+            print("Invalid pin selected\n")
             res = input("What is the new BCM GPIO pin (not the physical pin)? ")
     
     parser["pins"][pinVar] = res
@@ -57,22 +55,19 @@ def setPins():
 
 def configure():
     pin = ""
-    print("")
-    print("----------------------------------")
+    print("\n----------------------------------")
     print("Hypnic Power Manager configuration")
     print("----------------------------------")
-    print("")
-    print("Press CTRL+C at any time to exit")
+    print("\nPress CTRL+C at any time to exit")
     setPins()
 
 def powerOff(channel):
-    print('Powering off...')
-    os.system('sudo shutdown -h now')
+    print("Powering off...")
+    os.system("sudo shutdown -h now")
 
 def startDaemon():
     import time
-
-
+    HALT_PIN = parser.getint("pins", "halt_pin")
     try:
         # for RPi, use BCM mode
         GPIO.setmode(GPIO.BCM)
@@ -110,17 +105,11 @@ def main(argv):
    else:
        configure()
 
-
-import sys
-
 def signal_handler(sig, frame):
-    print("")
-    print("")
-    print("Restarting services...")
+    print("\n\nRestarting services...")
     os.system("systemctl stop hypnic")
     os.system("systemctl start hypnic")
-    print("Goodbye!")
-    print("")
+    print("Goodbye!\n")
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 

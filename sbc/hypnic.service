@@ -3,7 +3,7 @@ Description=Hypnic
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /usr/bin/hypnic.py -D
+ExecStart=/usr/bin/hypnic.py -d
 
 [Install]
 WantedBy=basic.target
