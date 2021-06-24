@@ -1,0 +1,9 @@
+[Unit]
+Description=Hypnic
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /usr/bin/hypnic-service.py
+
+[Install]
+WantedBy=basic.target
