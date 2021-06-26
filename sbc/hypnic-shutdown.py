@@ -7,31 +7,14 @@
 #    /etc/hypnic.conf                              #
 #--------------------------------------------------#
 
-from ConfigParser import SafeConfigParser
+from configparser import ConfigParser
 import sys
 import time
 import RPi.GPIO as GPIO
-#import logging
 
-#logging.basicConfig(filename='/var/log/hypnic.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-#logging.info('Shutdown script triggered')
-
-class GlobalSection(object):
-    def __init__(self, fp):
-        self.fp = fp
-        self.globalSec = '[pins]\n'
-
-    def readline(self):
-        if self.globalSec:
-            try:
-                return self.globalSec
-            finally:
-                self.globalSec = None
-        else:
-            return self.fp.readline()
-
-parser = SafeConfigParser()
-parser.readfp(GlobalSection(open('/etc/hypnic.conf')))
+# first read the current config
+parser = ConfigParser()
+parser.read('/etc/hypnic.conf')
 
 SAFE_PIN = parser.getint("pins", "safe_pin")
 
@@ -44,8 +27,3 @@ if (len(sys.argv) > 1):
         #logging.warning('Setting safe pin high')
         GPIO.output(SAFE_PIN, GPIO.HIGH)
         time.sleep(10)
-    #else:
-    #    logging.error('Invalid argument, quitting')
-
-#else:
-#    logging.error('No argument, quitting')
