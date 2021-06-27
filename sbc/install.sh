@@ -3,29 +3,27 @@
 #-----------------------------------------
 # Install script for Hypnic Power Manager
 #-----------------------------------------
-CYAN="\033[0;36m"
-NC="\033[0m"
 echo ""
 echo ""
-echo -e "${CYAN}██${NC}╗░░${CYAN}██${NC}╗${CYAN}██${NC}╗░░░${CYAN}██${NC}╗${CYAN}██████${NC}╗░${CYAN}███${NC}╗░░${CYAN}██${NC}╗${CYAN}██${NC}╗░${CYAN}█████${NC}╗░"
-echo -e "${CYAN}██${NC}║░░${CYAN}██${NC}║╚${CYAN}██${NC}╗░${CYAN}██${NC}╔╝${CYAN}██${NC}╔══${CYAN}██${NC}╗${CYAN}████${NC}╗░${CYAN}██${NC}║${CYAN}██${NC}║${CYAN}██${NC}╔══${CYAN}██${NC}╗"
-echo -e "${CYAN}███████║░╚████╔╝░██████╔╝██╔██╗██║██║██║░░╚═╝"
-echo -e "${CYAN}██╔══██║░░╚██╔╝░░██╔═══╝░██║╚████║██║██║░░██╗"
-echo -e "${CYAN}██║░░██║░░░██║░░░██║░░░░░██║░╚███║██║╚█████╔╝"
-echo -e "${CYAN}╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝░░╚══╝╚═╝░╚════╝░"
-echo -e "${NC}"
+echo "██╗░░██╗██╗░░░██╗██████╗░███╗░░██╗██╗░█████╗░"
+echo "██║░░██║╚██╗░██╔╝██╔══██╗████╗░██║██║██╔══██╗"
+echo "███████║░╚████╔╝░██████╔╝██╔██╗██║██║██║░░╚═╝"
+echo "██╔══██║░░╚██╔╝░░██╔═══╝░██║╚████║██║██║░░██╗"
+echo "██║░░██║░░░██║░░░██║░░░░░██║░╚███║██║╚█████╔╝"
+echo "╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░░╚═╝░░╚══╝╚═╝░╚════╝░"
+echo ""
 echo ""
 
 exit
 
-#if [ "$EUID" -ne 0 ]
-#  then
-#    echo "This installer requires elevated privileges to exectute."
-#    echo "Please run with sudo to continue."
-#  exit
-#fi
+if [ "$EUID" -ne 0 ]
+  then
+    echo "This installer requires elevated privileges to exectute."
+    echo "Please run with sudo to continue."
+  exit
+fi
 
-#DIR=""
+DIR=""
 
 #for LOC in "/lib" "/usr/lib"; do
 #  if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
