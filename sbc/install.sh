@@ -18,25 +18,25 @@ echo ""
 
 exit
 
-if [ "$EUID" -ne 0 ]
-  then
-    echo "This installer requires elevated privileges to exectute."
-    echo "Please run with sudo to continue."
-  exit
-fi
+#if [ "$EUID" -ne 0 ]
+#  then
+#    echo "This installer requires elevated privileges to exectute."
+#    echo "Please run with sudo to continue."
+#  exit
+#fi
 
-DIR=""
+#DIR=""
 
-for LOC in "/lib" "/usr/lib"; do
-  if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
-    DIR="/usr/lib/systemd/"
-  fi
-done
+#for LOC in "/lib" "/usr/lib"; do
+#  if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
+#    DIR="/usr/lib/systemd/"
+#  fi
+#done
 
-if [[ $DIR == "" ]]; then
-  echo "Could not find your systemd installation. Hypnic is currently only supported on systems running systemd"
-  exit
-fi
+#if [[ $DIR == "" ]]; then
+#  echo "Could not find your systemd installation. Hypnic is currently only supported on systems running systemd"
+#  exit
+#fi
 
 echo "Downloading and installing application..."
 wget -qO /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.conf
