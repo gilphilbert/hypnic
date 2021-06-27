@@ -3,8 +3,8 @@
 #-----------------------------------------
 # Install script for Hypnic Power Manager
 #-----------------------------------------
-CYAN='\033[0;36m'
-NC='\033[0m'
+CYAN="\033[0;36m"
+NC="\033[0m"
 echo ""
 echo ""
 echo -e "${CYAN}██${NC}╗░░${CYAN}██${NC}╗${CYAN}██${NC}╗░░░${CYAN}██${NC}╗${CYAN}██████${NC}╗░${CYAN}███${NC}╗░░${CYAN}██${NC}╗${CYAN}██${NC}╗░${CYAN}█████${NC}╗░"
