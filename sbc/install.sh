@@ -34,6 +34,9 @@ if [[ $DIR == "" ]]; then
   exit
 fi
 
+echo "Installing required libraries..."
+DEBIAN_FRONTEND=noninteractive apt-get install -qq python3-dev python3-rpi.gpio < /dev/null > /dev/null
+
 echo "Downloading and installing application..."
 wget -qO /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.conf
 wget -qO /usr/bin/hypnic.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.py
