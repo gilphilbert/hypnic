@@ -25,8 +25,8 @@ fi
 echo "Downloading and installing application..."
 wget -qO /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.conf
 wget -qO /usr/bin/hypnic.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.py
-wget -qO /usr/lib/systemd/system/hypnic.service https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
-wget -qO /usr/lib/systemd/system-shutdown/hypnic-shutdown.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
+wget -qO /etc/systemd/system/hypnic.service https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
+wget -qO /etc/systemd/system-shutdown/hypnic-shutdown.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
 chmod 755 /usr/bin/hypnic.py
 chmod 755 /usr/lib/systemd/system-shutdown/hypnic-shutdown.py
 
