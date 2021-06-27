@@ -25,11 +25,11 @@ fi
 
 DIR=""
 
-#for LOC in "/lib" "/usr/lib"; do
-#  if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
-#    DIR="/usr/lib/systemd/"
-#  fi
-#done
+for LOC in "/lib" "/usr/lib"; do
+  if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
+    DIR="/usr/lib/systemd/"
+  fi
+done
 
 #if [[ $DIR == "" ]]; then
 #  echo "Could not find your systemd installation. Hypnic is currently only supported on systems running systemd"
