@@ -27,7 +27,7 @@ DIR=""
 
 for LOC in "/lib" "/usr/lib"; do
   if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
-    DIR="/usr/lib/systemd/"
+    DIR="$LOC/systemd/"
   fi
 done
 
