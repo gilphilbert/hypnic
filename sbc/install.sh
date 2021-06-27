@@ -16,6 +16,8 @@ echo -e "${CYAN}╚═╝░░╚═╝░░░╚═╝░░░╚═╝░�
 echo -e "${NC}"
 echo ""
 
+exit
+
 if [ "$EUID" -ne 0 ]
   then
     echo "This installer requires elevated privileges to exectute."
