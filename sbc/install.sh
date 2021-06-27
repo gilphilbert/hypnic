@@ -14,8 +14,6 @@ echo "╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░░░�
 echo ""
 echo ""
 
-exit
-
 if [ "$EUID" -ne 0 ]
   then
     echo "This installer requires elevated privileges to exectute."
@@ -27,22 +25,22 @@ DIR=""
 
 for LOC in "/lib" "/usr/lib"; do
   if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
-    DIR="$LOC/systemd/"
+    DIR="$LOC/systemd"
   fi
 done
 
-#if [[ $DIR == "" ]]; then
-#  echo "Could not find your systemd installation. Hypnic is currently only supported on systems running systemd"
-#  exit
-#fi
+if [[ $DIR == "" ]]; then
+  echo "Could not find your systemd installation. Hypnic is currently only supported on systems running systemd"
+  exit
+fi
 
 echo "Downloading and installing application..."
 wget -qO /etc/hypnic.conf https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.conf
 wget -qO /usr/bin/hypnic.py https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.py
-wget -qO "$DIR/systemd/system/hypnic.service" https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
-wget -qO "$DIR/systemd/system-shutdown/hypnic-shutdown.py" https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
+wget -qO "$DIR/system/hypnic.service" https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic.service
+wget -qO "$DIR/system-shutdown/hypnic-shutdown.py" https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/hypnic-shutdown.py
 chmod 755 /usr/bin/hypnic.py
-chmod 755 "$DIR/systemd/system-shutdown/hypnic-shutdown.py"
+chmod 755 "$DIR/system-shutdown/hypnic-shutdown.py"
 
 echo "Configuring service..."
 systemctl daemon-reload
