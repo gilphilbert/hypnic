@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
 // we include our own pin mapping since the Arduino one is poor
 #include "pins.h"
 
@@ -13,6 +15,7 @@
 
 #define BROWNOUT_DELAY  2000 // wait 2 seconds
 #define POWER_DELAY     10000 // wait 10 seconds
+#define BLINK_DELAY     500 // time between blinks
 
 bool externalPower = LOW; // assume the device is powered down
 bool buttonState = HIGH; // internal pullup, so high is open
@@ -20,6 +23,11 @@ bool powerState = false; // the current state of the device
 bool deviceReportsOn = false; // this is set to 1 when the "SAFE" line goes low
 unsigned long brownoutTimer = 0; // timer used to delay power down to cover brownouts
 unsigned long powerDownTimer = 0; // powers down the device even if we don't get a safe signal
+unsigned long blinkTimer = 0; // used to determine when blinking should occur
+
+ISR(PCINT1_vect) {
+  // does nothing, this is called when the device wakes up (power on)
+}
 
 void setup() {
   // configure the device pins
@@ -36,6 +44,11 @@ void setup() {
   digitalWrite(POWER_CONTROL, 0);
   digitalWrite(LED, 0);
   digitalWrite(HALT_MESSAGE, 0);
+
+  // General Interrupt Mask Register, enables PCIE1 (Pin Change Interrupt) (PCINT 8-11)
+  GIMSK = 0b00100000; 
+  // Pin Change Mask Register 1 (defines which PCINT pins are enabled. Bit0 = PCINT8)
+  PCMSK1 = 0b00000001;
 }
 
 void checkPower() {
@@ -115,5 +128,19 @@ void loop() {
     powerState = false;
     deviceReportsOn = false;
     digitalWrite(HALT_MESSAGE, 0);
+
+    blinkTimer = 0; //stop blinking!
+
+    // if there's no external power, go into powerdown mode. Wake when PCINT8 changes (i.e., a power on event)
+    if (!externalPower) {
+      sleep_enable();
+      set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+      sleep_cpu();
+    }
+  }
+
+  if (powerDownTimer && millis() > blinkTimer) {
+    blinkTimer = millis() + BLINK_DELAY;
+    digitalWrite(LED, !digitalRead(LED));
   }
 }
