@@ -10,6 +10,8 @@
 // Assuming there is enough charge in the ultracapacitors to support the SBC for this long
 #define POWER_LOST_TIMEOUT  20
 
+#define V1_HARDWARE
+
 //----- SYSTEM STATIC - DO NOT CHANGE -----//
 #define POWER_CONTROL       PA1
 #define HALT_MESSAGE        PA2
@@ -24,10 +26,12 @@
 #define STATE_IDLE      0           // usual state
 #define STATE_BROWNOUT  1           // external power has been lost for <2s
 #define STATE_POWERDOWN 2           // graceful shutdown started but not complete
+#define STATE_STARTING  3           // used for V1 hardware to determine whether safe is active
 
 uint8_t currentState = STATE_IDLE;  // shows the current "state" (action we're performing)
 uint8_t powerDownTimer = 0;         // used to count the number of ticks while we're waiting for power down
-bool isDebounce = 0;                // is the button being debounced?
+
+#define DISABLE_TIMER1  TCCR1B &= ~((1 << CS10) | (1 << CS11) |(1 << CS12));
 
 // -------------------------------------- //
 //  configures the IO pins                //
@@ -52,7 +56,7 @@ void pinConfig() {
 void interruptConfig() {
   GIMSK  |= (1 << PCIE0);           // enable PCINT 0-7
   PCMSK0 |= (1 << POWER_BUTTON);    // interrupt for external power
-  PCMSK0 |= (1 << SAFE);            // interrupt for safe message
+  PCMSK0 |= (1 << SAFE);;            // interrupt for safe message
   GIMSK  |= (1 << PCIE1);           // enable PCINT 8-11
   PCMSK1 |= (1 << EXTERNAL_POWER);  // interrupt for external power
   sei();                            // enable interrupts
@@ -68,10 +72,10 @@ void timerConfig() {
   TCCR1B &= ~((1 << CS10) | (1 << CS11) | (1 << CS12));  // prescaler of 0 disables the timer
 
   // timer0 is used for button debounce
-  TCCR0B |= (1 << WGM12);                                // Configure timer 0 for CTC mode
+  TCCR0B |= (1 << WGM02);                                // Configure timer 0 for CTC mode
   TIMSK0 |= (1 << OCIE0A);                               // Enable CTC interrupt
-  OCR0A   = 195;                                         // at 1Mhz and prescaler of 8, this will give us 0.5s tick
-  TCCR0B &= ~((1 << CS10) | (1 << CS11) | (1 << CS12));  // prescaler of 0 disables the timer
+  OCR0A   = 100;                                         // at 1Mhz and prescaler of 1024, this will give us ~0.1s tick (0.1024s)
+  TCCR0B &= ~((1 << CS00) | (1 << CS01) | (1 << CS02));  // prescaler of 0 disables the timer
 }
 
 // ---------------------------------------- //
@@ -89,11 +93,23 @@ void changePowerState(bool state) {
     currentState = STATE_IDLE;
     // set the counter back to zero
     powerDownTimer = 0;
-    TCCR1B &= ~((1 << CS10) | (1 << CS11) |(1 << CS12)); // prescaler of 0
+    DISABLE_TIMER1
+    
+    // special case for V1 hardware. Without a pullup on the SAFE pin, it floats and won't allow the device to start
+    #ifdef V1_HARDWARE
+      PCMSK0 &= ~(1 << SAFE);
+    #endif
+
   } else {
     // turn on pins
     PORTA |= (1 << POWER_CONTROL);
     PORTB |= (1 << LED);
+
+    #ifdef V1_HARDWARE
+      currentState = STATE_STARTING; // the SBC is still booting
+      OCR1A   = 31250; // at 1Mhz and prescaler of 64, this will give us 2s tick
+      TCCR1B |= ((1 << CS10) | (1 << CS11)); // prescaler of 64
+    #endif
   }
 }
 
@@ -112,7 +128,7 @@ ISR(TIM1_COMPA_vect) {
   switch (currentState) {
     case STATE_BROWNOUT:
       // disable the timer
-      TCCR1B &= ~((1 << CS10) | (1 << CS11) |(1 << CS12)); // prescaler of 0
+      DISABLE_TIMER1
 
       // is the power still out?
       if (!(PINB & _BV(EXTERNAL_POWER)) ? 1 : 0) {
@@ -135,15 +151,20 @@ ISR(TIM1_COMPA_vect) {
       break;
 
     case STATE_IDLE: // used when power is restored during a brownout
-      TCCR1B &= ~((1 << CS10) | (1 << CS11) |(1 << CS12)); // prescaler of 0
+      DISABLE_TIMER1
+      break;
+
+    case STATE_STARTING: // this case only applies to V1 hardware
+      DISABLE_TIMER1
+      currentState = STATE_IDLE;
+      PCMSK0 |= (1 << SAFE);
       break;
   }
 }
 
 // handles button debounce
 ISR(TIM0_COMPA_vect) {
-  TCCR0B &= ~((1 << CS10) | (1 << CS11) | (1 << CS12));  // prescaler of 0 disables the timer
-  isDebounce = 0;
+  TCCR0B &= ~((1 << CS00) | (1 << CS01) | (1 << CS02));  // prescaler of 0 disables the timer
   bool btnState = (PINA & _BV(POWER_BUTTON)) ? 1 : 0;
   if (btnState == 0) {
     // get the current state of the device
@@ -177,13 +198,8 @@ ISR (PCINT0_vect) {
   // read switch, check to see if it's been pressed
   bool btnState = (PINA & _BV(POWER_BUTTON)) ? 1 : 0;
   if (btnState == 0) {
-    if (!isDebounce) {
-      TCNT0 = 0;
-      isDebounce = 1;
-      TCCR0B |= (1 << CS12);  // prescaler of 256 results in 50ms timer
-    } else {
-      TCNT0 = 0;
-    }
+    TCNT0 = 0;
+    TCCR0B |= ((1 << CS00) | (1 << CS02));  // prescaler of 256 results in 50ms timer
   }
 }
 
@@ -219,6 +235,10 @@ int main() {
   pinConfig();
   interruptConfig();
   timerConfig();
+
+  #ifdef V1_HARDWARE
+    PCMSK0 &= ~(1 << SAFE);
+  #endif
 
   PORTA &= ~(1 << HALT_MESSAGE); // clear any request to halt
   #ifdef AUTO_POWER_ON

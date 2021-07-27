@@ -21,9 +21,7 @@ SAFE_PIN = parser.getint("pins", "safe_pin")
 if (len(sys.argv) > 1):
     arg = str(sys.argv[1])
     if (arg == "halt" or arg == "poweroff"):
-        #logging.info('Request to halt or shutdown')
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(SAFE_PIN, GPIO.OUT)
-        #logging.warning('Setting safe pin high')
         GPIO.output(SAFE_PIN, GPIO.HIGH)
         time.sleep(10)

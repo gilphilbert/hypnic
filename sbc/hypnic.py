@@ -68,10 +68,19 @@ def powerOff(channel):
 def startDaemon():
     import time
     HALT_PIN = parser.getint("pins", "halt_pin")
+    SAFE_PIN = parser.getint("pins", "safe_pin")
     try:
         # for RPi, use BCM mode
         GPIO.setmode(GPIO.BCM)
-        # configure the pin to use pullup mode (hypnic will pull this pin down to ground)
+
+        # -- configure the SAFE pin
+        # set to output
+        GPIO.setup(SAFE_PIN, GPIO.OUT)
+        # set low
+        GPIO.output(SAFE_PIN, GPIO.LOW)
+
+        # -- configure the HALT pin
+        # input in pullup mode (hypnic will pull this pin down to ground)
         GPIO.setup(HALT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         # if the pin falls, call the powerdown command
         GPIO.add_event_detect(HALT_PIN, GPIO.FALLING, callback=powerOff)
