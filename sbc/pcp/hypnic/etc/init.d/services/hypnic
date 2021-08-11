@@ -1,0 +1,53 @@
+#!/bin/sh
+NAME="Hypnic"
+DESC="Power Manager"
+CONF=/etc/hypnic.conf
+
+OPTIONS="-d"
+DAEMON=/bin/hypnic.sh
+
+starthypnic(){
+    if [ -f "$CONF" ]; then
+        echo "Found Hypnic Configuration"
+	start-stop-daemon --start --quiet -b --exec /usr/bin/env - \
+	$DAEMON -- $OPTIONS
+    else
+        echo "Hypnic not Configured......exiting"
+    fi
+}
+
+stophypnic(){
+    echo -n "Stopping Hypnic"
+    start-stop-daemon -K -x /bin/sh /bin/hypnic.sh
+    echo "Stopped."
+}
+#Must Run as Root for ownership
+if [ $(/usr/bin/id -u) -ne 0 ]; then
+    echo "Need to run as root." >&2
+    exit 1
+fi
+
+case "$1" in
+    start)
+        starthypnic
+    ;;
+    stop)
+        stophypnic
+    ;;
+    restart)
+        echo "Restarting Hypnic..."
+        stophypnic
+        sleep 3
+        starthypnic
+    ;;
+    status)
+	ps -ef | grep $DAEMON | grep -v grep | awk '{ print $0 }'
+    ;;
+    *)
+        echo ""
+        echo -e "Usage: /usr/local/etc/init.d/$(basename $0) [start|stop|restart|status]"
+        echo ""
+        exit 1
+    ;;
+esac
+exit 0
