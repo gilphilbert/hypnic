@@ -46,7 +46,7 @@ fi
 
 if [[ "$MODE" == "pcp" ]]; then
   DEST_FILE=/etc/sysconfig/tcedir/optional/hypnic.tcz
-  wget -qO $DEST_FILE https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/pcp/hypnic.tcz && su -c "tce-load -i $DEST_FILE" tc
+  wget -qO $DEST_FILE https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/pcp/hypnic.tcz && su -c "tce-load -i $DEST_FILE" tc && /bin/hypnic.sh --install
   if ! grep -Fq "hypnic.tcz" /etc/sysconfig/tcedir/onboot.lst; then
     echo "hypnic.tcz" >> /etc/sysconfig/tcedir/onboot.lst
   fi
