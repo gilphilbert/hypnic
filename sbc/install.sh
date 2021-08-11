@@ -46,8 +46,7 @@ fi
 
 if [[ "$MODE" == "pcp" ]]; then
   DEST_FILE=/etc/sysconfig/tcedir/optional/hypnic.tcz
-  wget -qO $DEST_FILE https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/pcp/hypnic.tcz
-  su -c "tce-load -i $DEST_FILE" tc
+  wget -qO $DEST_FILE https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/pcp/hypnic.tcz && su -c "tce-load -i $DEST_FILE" tc
 fi
 
 if [[ "$MODE" == "systemd" ]]; then
