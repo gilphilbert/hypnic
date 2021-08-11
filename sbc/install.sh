@@ -23,19 +23,20 @@ fi
 DIR=""
 MODE="fail"
 
-for LOC in "/lib" "/usr/lib"; do
-  if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
-    DIR="$LOC/systemd"
-    MODE="systemd"
-    echo "systemd-based system detected at $DIR"
-  fi
-done
-
 if [[ -f /etc/os-release ]]; then
   if grep -Fq "piCorePlayer" /etc/os-release; then
     echo "PiCorePlayer system detected"
     MODE="pcp"
   fi
+else
+  # try to detect OS
+  for LOC in "/lib" "/usr/lib"; do
+    if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
+      DIR="$LOC/systemd"
+      MODE="systemd"
+      echo "systemd-based system detected at $DIR"
+    fi
+  done
 fi
 
 if [[ "$MODE" == "fail" ]]; then
@@ -46,9 +47,7 @@ fi
 if [[ "$MODE" == "pcp" ]]; then
   DEST_FILE=/etc/sysconfig/tcedir/optional/hypnic.tcz
   wget -qO $DEST_FILE https://raw.githubusercontent.com/gilphilbert/hypnic/main/sbc/pcp/hypnic.tcz
-  su tc
-  tce-load -i $DEST_FILE
-  exit
+  su -c 'tce-load -i $DEST_FILE' tc
 fi
 
 if [[ "$MODE" == "systemd" ]]; then
