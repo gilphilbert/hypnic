@@ -22,6 +22,7 @@ fi
 
 DIR=""
 MODE="fail"
+EXT=""
 
 if [[ -f /etc/os-release ]]; then
   if grep -Fq "piCorePlayer" /etc/os-release; then
@@ -50,6 +51,8 @@ if [[ "$MODE" == "pcp" ]]; then
   if ! grep -Fq "hypnic.tcz" /etc/sysconfig/tcedir/onboot.lst; then
     echo "hypnic.tcz" >> /etc/sysconfig/tcedir/onboot.lst
   fi
+  EXT="sh"
+  echo -e "\nNote: SAFE notification requires a reboot\n"
 fi
 
 if [[ "$MODE" == "systemd" ]]; then
@@ -68,6 +71,7 @@ if [[ "$MODE" == "systemd" ]]; then
   systemctl daemon-reload
   systemctl enable hypnic.service
   systemctl start hypnic.service
+  EXT="py"
 fi
 
 
@@ -77,5 +81,5 @@ echo "  HALT: GPIO17"
 echo "  SAFE: GPIO27"
 echo ""
 echo "To change these pins, please run:"
-echo "  sudo hypnic.py"
+echo "  sudo hypnic.$EXT"
 echo ""
