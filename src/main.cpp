@@ -4,7 +4,7 @@
 
 //----------- USER CONFIGURABLE -----------//
 // When power is applied to the Hypnic, the device is powered on. Comment to disable
-//#define AUTO_POWER_ON
+#define AUTO_POWER_ON
 
 // Time in seconds after external power lost the device remains powered up for if no SAFE signal recieved
 // Assuming there is enough charge in the ultracapacitors to support the SBC for this long
@@ -140,7 +140,9 @@ ISR(TIM1_COMPA_vect) {
     case STATE_POWERDOWN:
       // increment the timer
       powerDownTimer++;
-      // see if 20s has passed
+      // see if POWER_LOST length of time has passed
+      //   -> multiply the timeout by 2 (as we're using a 2Hz timer)
+      //   -> remove the 2s delay (4 overflows, as we're using a 2Hz timer)
       if (powerDownTimer < ((POWER_LOST_TIMEOUT * 2) - 4)) {
         // toggle the LED
         PORTB ^= (1 << LED);
