@@ -201,7 +201,7 @@ ISR (PCINT0_vect) {
   bool btnState = (PINA & _BV(POWER_BUTTON)) ? 1 : 0;
   if (btnState == 0) {
     TCNT0 = 0;
-    TCCR0B |= ((1 << CS00) | (1 << CS02));  // prescaler of 256 results in 50ms timer
+    TCCR0B |= ((1 << CS00) | (1 << CS02));  // prescaler of 1024
   }
 }
 

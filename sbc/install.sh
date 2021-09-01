@@ -29,13 +29,17 @@ if [[ -f /etc/os-release ]]; then
     echo "PiCorePlayer system detected"
     MODE="pcp"
   fi
-else
+fi
+
+# if it's not pCp, is it systemd-based
+if [[ "$MODE" == "fail" ]]; then
   # try to detect OS
   for LOC in "/lib" "/usr/lib"; do
-    if [[ -f "$LOC/systemd/systemd-shutdown" ]]; then
+    if [[ -d "$LOC/systemd/system-shutdown" ]]; then
       DIR="$LOC/systemd"
       MODE="systemd"
       echo "systemd-based system detected at $DIR"
+      break
     fi
   done
 fi
