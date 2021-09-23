@@ -10,8 +10,6 @@
 // Assuming there is enough charge in the ultracapacitors to support the SBC for this long
 #define POWER_LOST_TIMEOUT  20
 
-#define V1_HARDWARE
-
 //----- SYSTEM STATIC - DO NOT CHANGE -----//
 #define POWER_CONTROL       PA1
 #define HALT_MESSAGE        PA2
@@ -26,7 +24,6 @@
 #define STATE_IDLE      0           // usual state
 #define STATE_BROWNOUT  1           // external power has been lost for <2s
 #define STATE_POWERDOWN 2           // graceful shutdown started but not complete
-#define STATE_STARTING  3           // used for V1 hardware to determine whether safe is active
 
 uint8_t currentState = STATE_IDLE;  // shows the current "state" (action we're performing)
 uint8_t powerDownTimer = 0;         // used to count the number of ticks while we're waiting for power down
@@ -60,7 +57,7 @@ void interruptConfig() {
   GIMSK  |= (1 << PCIE1);           // enable PCINT 8-11
   PCMSK1 |= (1 << EXTERNAL_POWER);  // interrupt for external power
   sei();                            // enable interrupts
-}
+}ZX
 
 // -------------------------------------- //
 //  configures the timers                 //
@@ -74,7 +71,7 @@ void timerConfig() {
   // timer0 is used for button debounce
   TCCR0B |= (1 << WGM02);                                // Configure timer 0 for CTC mode
   TIMSK0 |= (1 << OCIE0A);                               // Enable CTC interrupt
-  OCR0A   = 100;                                         // at 1Mhz and prescaler of 1024, this will give us ~0.1s tick (0.1024s)
+  OCR0A   = 100;                                         // at  1Mhz and prescaler of 1024, this will give us ~0.1s tick (0.1024s)
   TCCR0B &= ~((1 << CS00) | (1 << CS01) | (1 << CS02));  // prescaler of 0 disables the timer
 }
 
@@ -94,22 +91,10 @@ void changePowerState(bool state) {
     // set the counter back to zero
     powerDownTimer = 0;
     DISABLE_TIMER1
-    
-    // special case for V1 hardware. Without a pullup on the SAFE pin, it floats and won't allow the device to start
-    #ifdef V1_HARDWARE
-      PCMSK0 &= ~(1 << SAFE);
-    #endif
-
   } else {
     // turn on pins
     PORTA |= (1 << POWER_CONTROL);
     PORTB |= (1 << LED);
-
-    #ifdef V1_HARDWARE
-      currentState = STATE_STARTING; // the SBC is still booting
-      OCR1A   = 31250; // at 1Mhz and prescaler of 64, this will give us 2s tick
-      TCCR1B |= ((1 << CS10) | (1 << CS11)); // prescaler of 64
-    #endif
   }
 }
 
@@ -120,8 +105,9 @@ void startPowerdown() {
   PORTA |= (1 << HALT_MESSAGE);     // send the halt message to the device
   currentState = STATE_POWERDOWN;   // change our current state
   // now set the timer. it will count to 20(s) flashing the LED at 2Hz
-  OCR1A   = 62500;                  // at 1Mhz and prescaler of 8, this will give us 0.5s tick
-  TCCR1B |= (1 << CS11);            // prescaler of 8
+  // at 16Mhz, a prescaler of 256, and counting to 322227, this will give us 0.5s tick
+  OCR1A   = 32227;                  // ticks
+  TCCR1B |= (1 << CS12);            // prescaler of 256
 }
 
 ISR(TIM1_COMPA_vect) {
@@ -155,16 +141,16 @@ ISR(TIM1_COMPA_vect) {
     case STATE_IDLE: // used when power is restored during a brownout
       DISABLE_TIMER1
       break;
-
-    case STATE_STARTING: // this case only applies to V1 hardware
-      DISABLE_TIMER1
-      currentState = STATE_IDLE;
-      PCMSK0 |= (1 << SAFE);
-      break;
   }
 }
 
 // handles button debounce
+uint8_t debounce_overflows = 0;
+
+//////// <======= CHECK FOR TIMER OVERFLOW
+// need to count to 6 (with a remainder of 114 ticks)
+// once complete, set the counter and read it (if reading is possible, should be), this removes isDebounce (use OCR0A)
+
 ISR(TIM0_COMPA_vect) {
   TCCR0B &= ~((1 << CS00) | (1 << CS01) | (1 << CS02));  // prescaler of 0 disables the timer
   bool btnState = (PINA & _BV(POWER_BUTTON)) ? 1 : 0;
@@ -227,8 +213,9 @@ ISR (PCINT1_vect) {
     if (deviceState) {
       // start the brownout timer
       currentState = STATE_BROWNOUT;
-      OCR1A   = 31250; // at 1Mhz and prescaler of 64, this will give us 2s tick
-      TCCR1B |= ((1 << CS10) | (1 << CS11)); // prescaler of 64
+      // at 16Mhz, prescaler of 1024, and counting 32227 ticks, this will give us 2s timer
+      OCR1A   = 32227; // ticks
+      TCCR1B |= ((1 << CS12) | (1 << CS10)); // prescaler of 256
     }
   }
 }
@@ -237,10 +224,6 @@ int main() {
   pinConfig();
   interruptConfig();
   timerConfig();
-
-  #ifdef V1_HARDWARE
-    PCMSK0 &= ~(1 << SAFE);
-  #endif
 
   PORTA &= ~(1 << HALT_MESSAGE); // clear any request to halt
   #ifdef AUTO_POWER_ON
